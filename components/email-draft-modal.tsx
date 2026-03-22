@@ -8,9 +8,19 @@ interface EmailDraftModalProps {
   prospect: Prospect | null
   isOpen: boolean
   onClose: () => void
+  onSuccess?: () => void
+  initialSubject?: string
+  initialBody?: string
 }
 
-export function EmailDraftModal({ prospect, isOpen, onClose }: EmailDraftModalProps) {
+export function EmailDraftModal({ 
+  prospect, 
+  isOpen, 
+  onClose, 
+  onSuccess,
+  initialSubject,
+  initialBody
+}: EmailDraftModalProps) {
   const { user, addEmail } = useAuth()
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
@@ -22,7 +32,12 @@ export function EmailDraftModal({ prospect, isOpen, onClose }: EmailDraftModalPr
   useEffect(() => {
     if (prospect && isOpen) {
       setRecipientEmail(prospect.email || '')
-      generateEmailDraft()
+      if (initialSubject || initialBody) {
+        setSubject(initialSubject || '')
+        setBody(initialBody || '')
+      } else {
+        generateEmailDraft()
+      }
     }
   }, [prospect, isOpen])
 
@@ -85,6 +100,7 @@ ${user?.name || 'Your Financial Advisor'}`)
     })
     
     setIsSending(false)
+    onSuccess?.()
     onClose()
     
     // Reset form

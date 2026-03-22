@@ -9,20 +9,37 @@ import { EmailDraftModal } from '@/components/email-draft-modal'
 import { EmailStatusList } from '@/components/email-status-list'
 
 type SortOption = 'urgency' | 'icp' | 'name'
-type ViewTab = 'prospects' | 'emails'
+type ViewTab = 'prospects' | 'emails' | 'sent'
 
 export default function AdvisorDashboard() {
-  const { user, getEmailsByAdvisor } = useAuth()
+  const { user, emails, getEmailsByAdvisor } = useAuth()
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null)
+  const [initialEmailContent, setInitialEmailContent] = useState<{subject: string, body: string} | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('urgency')
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<ViewTab>('prospects')
 
   const myEmails = user ? getEmailsByAdvisor(user.id) : []
+  
+  // Filter prospects to hide those that already have an associated email (drafted or sent)
+  const displayProspects = useMemo(() => {
+    const emailedProspectIds = new Set(emails.map(e => e.prospectId))
+    return prospects.filter(p => !emailedProspectIds.has(p.id))
+  }, [emails])
+
+  const activeEmails = useMemo(() => 
+    myEmails.filter(e => e.status !== 'sent'), 
+    [myEmails]
+  )
+
+  const sentEmails = useMemo(() => 
+    myEmails.filter(e => e.status === 'sent'), 
+    [myEmails]
+  )
 
   const sortedProspects = useMemo(() => {
-    let filtered = prospects.filter(p => 
+    let filtered = displayProspects.filter(p => 
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.current_role.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.matched_icp.toLowerCase().includes(searchQuery.toLowerCase())
@@ -38,11 +55,27 @@ export default function AdvisorDashboard() {
       default:
         return filtered
     }
-  }, [sortBy, searchQuery])
+  }, [sortBy, searchQuery, displayProspects])
 
   const handleDraftEmail = (prospect: Prospect) => {
+    setInitialEmailContent(null)
     setSelectedProspect(prospect)
     setIsModalOpen(true)
+  }
+
+  const handleRedraftEmail = (email: any) => {
+    const prospect = prospects.find(p => p.id === email.prospectId)
+    if (prospect) {
+      setInitialEmailContent({ subject: email.subject, body: email.body })
+      setSelectedProspect(prospect)
+      setIsModalOpen(true)
+    }
+  }
+
+  const { deleteEmail } = useAuth()
+  const handleDeleteEmail = (emailId: string) => {
+    deleteEmail(emailId)
+    setActiveTab('prospects')
   }
 
   const pendingCount = myEmails.filter(e => e.status === 'pending').length
@@ -54,12 +87,12 @@ export default function AdvisorDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5">
           <p className="text-sm text-[#64748b]">Total Prospects</p>
-          <p className="text-2xl font-semibold text-white mt-1">{prospects.length}</p>
+          <p className="text-2xl font-semibold text-white mt-1">{displayProspects.length}</p>
         </div>
         <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5">
           <p className="text-sm text-[#64748b]">High Priority</p>
           <p className="text-2xl font-semibold text-[#22c55e] mt-1">
-            {prospects.filter(p => p.urgency_score >= 85).length}
+            {displayProspects.filter(p => p.urgency_score >= 85).length}
           </p>
         </div>
         <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-5">
@@ -93,11 +126,28 @@ export default function AdvisorDashboard() {
           }`}
         >
           My Emails
-          {myEmails.length > 0 && (
+          {activeEmails.length > 0 && (
             <span className={`px-2 py-0.5 rounded-full text-xs ${
               activeTab === 'emails' ? 'bg-white/20' : 'bg-[#1e293b]'
             }`}>
-              {myEmails.length}
+              {activeEmails.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('sent')}
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+            activeTab === 'sent'
+              ? 'bg-[#3b82f6] text-white'
+              : 'text-[#64748b] hover:text-white'
+          }`}
+        >
+          Sent
+          {sentEmails.length > 0 && (
+            <span className={`px-2 py-0.5 rounded-full text-xs ${
+              activeTab === 'sent' ? 'bg-white/20' : 'bg-[#1e293b]'
+            }`}>
+              {sentEmails.length}
             </span>
           )}
         </button>
@@ -146,12 +196,18 @@ export default function AdvisorDashboard() {
 
           {sortedProspects.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-[#64748b]">No prospects match your search</p>
+              <p className="text-[#64748b]">No prospects match your search or current queue</p>
             </div>
           )}
         </>
+      ) : activeTab === 'emails' ? (
+        <EmailStatusList 
+          emails={activeEmails} 
+          onRedraft={handleRedraftEmail}
+          onDelete={handleDeleteEmail}
+        />
       ) : (
-        <EmailStatusList emails={myEmails} />
+        <EmailStatusList emails={sentEmails} />
       )}
 
       {/* Email Draft Modal */}
@@ -161,7 +217,11 @@ export default function AdvisorDashboard() {
         onClose={() => {
           setIsModalOpen(false)
           setSelectedProspect(null)
+          setInitialEmailContent(null)
         }}
+        onSuccess={() => setActiveTab('emails')}
+        initialSubject={initialEmailContent?.subject}
+        initialBody={initialEmailContent?.body}
       />
     </div>
   )
