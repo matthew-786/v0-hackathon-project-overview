@@ -1,6 +1,7 @@
+
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Prospect } from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { experimental_useObject as useObject } from '@ai-sdk/react'
@@ -10,6 +11,9 @@ interface EmailDraftModalProps {
   prospect: Prospect | null
   isOpen: boolean
   onClose: () => void
+  onSuccess?: () => void
+  initialSubject?: string
+  initialBody?: string
 }
 
 const complianceSchema = z.object({
@@ -24,6 +28,7 @@ export function EmailDraftModal({ prospect, isOpen, onClose }: EmailDraftModalPr
   const { user, addEmail } = useAuth()
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
+  const [recipientEmail, setRecipientEmail] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
 
   const { object, submit, isLoading, error } = useObject({
@@ -64,9 +69,21 @@ export function EmailDraftModal({ prospect, isOpen, onClose }: EmailDraftModalPr
   // Generate email template when prospect changes
   useEffect(() => {
     if (prospect && isOpen) {
-      generateEmailDraft()
+      setRecipientEmail(prospect.email || '')
+      if (initialSubject || initialBody) {
+        setSubject(initialSubject || '')
+        setBody(initialBody || '')
+      } else {
+        generateEmailDraft()
+      }
     }
   }, [prospect, isOpen])
+
+  // Run compliance analysis — informational only, does NOT gate sending
+  const auditResult = useMemo(() => {
+    if (!body) return null
+    return runComplianceAudit(body)
+  }, [body])
 
   const generateEmailDraft = () => {
     if (!prospect) return
@@ -117,6 +134,9 @@ ${user?.name || 'Your Financial Advisor'}`)
   }
 
   if (!isOpen || !prospect) return null
+
+  const hasIssues = auditResult && !auditResult.isVerified
+  const canSubmit = !!subject && !!body && !isGenerating && !isSubmitting
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -262,6 +282,21 @@ ${user?.name || 'Your Financial Advisor'}`)
             </>
           )}
         </div>
+
+        {/* ── Right Column: Compliance Sidebar (read-only) ─────────────────── */}
+        <div className="w-full lg:w-1/3 border-t lg:border-t-0 lg:border-l border-[#1e293b] bg-[#0a0f1c] rounded-r-2xl overflow-hidden shrink-0 flex flex-col">
+          <div className="flex lg:hidden items-center justify-between p-4 border-b border-[#1e293b]">
+            <h2 className="text-sm font-semibold text-white">Compliance Audit</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {/* Sidebar is read-only — no override prop passed */}
+            <ComplianceAuditSidebar
+              auditResult={auditResult}
+              canOverride={false}
+            />
+          </div>
+        </div>
+
       </div>
     </div>
   )

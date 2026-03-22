@@ -26,7 +26,8 @@ export const prospects: Prospect[] = [
       'May have existing advisory relationship through Goldman',
       'Compliance considerations for financial services employees'
     ],
-    recommended_outreach_angle: 'Focus on tax-advantaged strategies for equity compensation and deferred comp optimization'
+    recommended_outreach_angle: 'Focus on tax-advantaged strategies for equity compensation and deferred comp optimization',
+    email: 'mchen@goldmansachs.com'
   },
   {
     id: '2',
@@ -52,7 +53,8 @@ export const prospects: Prospect[] = [
       'Time-constrained due to partner workload',
       'May be skeptical of outreach'
     ],
-    recommended_outreach_angle: 'Address K-1 tax optimization and capital call liquidity strategies for new partners'
+    recommended_outreach_angle: 'Address K-1 tax optimization and capital call liquidity strategies for new partners',
+    email: 'swilliams@kirkland.com'
   },
   {
     id: '3',
@@ -78,7 +80,8 @@ export const prospects: Prospect[] = [
       'Likely being approached by many advisors',
       'May have existing M&A advisor relationships'
     ],
-    recommended_outreach_angle: 'Focus on post-exit tax strategies, QSBS optimization, and charitable giving vehicles'
+    recommended_outreach_angle: 'Focus on post-exit tax strategies, QSBS optimization, and charitable giving vehicles',
+    email: 'david.r@techflow.io'
   },
   {
     id: '4',
@@ -104,7 +107,8 @@ export const prospects: Prospect[] = [
       'May have long-standing advisor relationship',
       'Conservative approach to financial decisions'
     ],
-    recommended_outreach_angle: 'Retirement income optimization and tax-efficient deferred comp distribution strategies'
+    recommended_outreach_angle: 'Retirement income optimization and tax-efficient deferred comp distribution strategies',
+    email: 'jthompson@massgeneral.org'
   },
   {
     id: '5',
@@ -130,7 +134,8 @@ export const prospects: Prospect[] = [
       'Family dynamics may complicate planning',
       'Emotional attachment to business legacy'
     ],
-    recommended_outreach_angle: 'Business succession strategies including GRAT, IDGT, and installment sale techniques'
+    recommended_outreach_angle: 'Business succession strategies including GRAT, IDGT, and installment sale techniques',
+    email: 'rkim@kimman.com'
   },
   {
     id: '6',
@@ -156,7 +161,8 @@ export const prospects: Prospect[] = [
       'Tech employees often DIY investing',
       'May have existing startup advisor'
     ],
-    recommended_outreach_angle: 'Pre-IPO planning strategies including 83(b) elections, QSBS, and concentration risk management'
+    recommended_outreach_angle: 'Pre-IPO planning strategies including 83(b) elections, QSBS, and concentration risk management',
+    email: 'afoster@stripe.com'
   },
   {
     id: '7',
@@ -182,7 +188,8 @@ export const prospects: Prospect[] = [
       'Likely has established advisory relationships',
       'May be wary of new advisor outreach'
     ],
-    recommended_outreach_angle: 'Estate planning optimization and charitable giving strategies for retirees'
+    recommended_outreach_angle: 'Estate planning optimization and charitable giving strategies for retirees',
+    email: 'twright@wrightind.com'
   },
   {
     id: '8',
@@ -208,7 +215,8 @@ export const prospects: Prospect[] = [
       'Deal uncertainty may delay planning',
       'Complex cap table with multiple share classes'
     ],
-    recommended_outreach_angle: 'Pre-exit planning for biotech founders including QSBS optimization and secondary transactions'
+    recommended_outreach_angle: 'Pre-exit planning for biotech founders including QSBS optimization and secondary transactions',
+    email: 'lpark@biogenix.com'
   }
 ]
 
