@@ -19,6 +19,7 @@ interface AuthContextType {
   ) => void
   getEmailsByAdvisor: (advisorId: string) => EmailRecord[]
   getPendingEmails: () => EmailRecord[]
+  deleteEmail: (emailId: string) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -81,6 +82,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return emails.filter(email => email.status === 'pending')
   }, [emails])
 
+  const deleteEmail = useCallback((emailId: string) => {
+    setEmails(prev => prev.filter(email => email.id !== emailId))
+  }, [])
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -90,7 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       addEmail,
       updateEmailStatus,
       getEmailsByAdvisor,
-      getPendingEmails
+      getPendingEmails,
+      deleteEmail
     }}>
       {children}
     </AuthContext.Provider>
