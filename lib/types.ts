@@ -13,6 +13,7 @@ export interface Prospect {
   why_now_reasons: string[]
   concerns: string[]
   recommended_outreach_angle: string
+  email: string
 }
 
 // Email status types
@@ -33,6 +34,7 @@ export interface EmailRecord {
   complianceNotes?: string
   advisorId: string
   advisorName: string
+  recipientEmail: string
 }
 
 // User types

@@ -2,6 +2,9 @@
 
 import { EmailRecord } from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
+import { sendGmailEmail } from '@/lib/gmail-api'
+import { toast } from 'sonner'
+import { useState } from 'react'
 
 interface EmailStatusListProps {
   emails: EmailRecord[]
@@ -9,6 +12,7 @@ interface EmailStatusListProps {
 
 export function EmailStatusList({ emails }: EmailStatusListProps) {
   const { updateEmailStatus } = useAuth()
+  const [sendingId, setSendingId] = useState<string | null>(null)
 
   const getStatusBadge = (status: EmailRecord['status']) => {
     const styles: Record<string, string> = {
@@ -34,8 +38,26 @@ export function EmailStatusList({ emails }: EmailStatusListProps) {
     )
   }
 
-  const handleSendEmail = (emailId: string) => {
-    updateEmailStatus(emailId, 'sent')
+  const handleSendEmail = async (email: EmailRecord) => {
+    setSendingId(email.id)
+    try {
+      const result = await sendGmailEmail({
+        to: email.recipientEmail,
+        subject: email.subject,
+        body: email.body
+      })
+
+      if (result.success) {
+        updateEmailStatus(email.id, 'sent')
+        toast.success(`Email sent successfully to ${email.prospectName}`)
+      } else {
+        toast.error(`Failed to send email: ${result.error}`)
+      }
+    } catch (error: any) {
+      toast.error(`Error: ${error.message || 'An unexpected error occurred'}`)
+    } finally {
+      setSendingId(null)
+    }
   }
 
   const formatDate = (date: Date) => {
@@ -71,7 +93,8 @@ export function EmailStatusList({ emails }: EmailStatusListProps) {
           <div className="flex items-start justify-between mb-3">
             <div>
               <h4 className="text-white font-medium">{email.prospectName}</h4>
-              <p className="text-sm text-[#64748b] mt-0.5">{email.subject}</p>
+              <p className="text-xs text-[#94a3b8] mt-0.5">{email.recipientEmail}</p>
+              <p className="text-sm text-[#64748b] mt-1">{email.subject}</p>
             </div>
             {getStatusBadge(email.status)}
           </div>
@@ -86,10 +109,21 @@ export function EmailStatusList({ emails }: EmailStatusListProps) {
             
             {email.status === 'approved' && (
               <button
-                onClick={() => handleSendEmail(email.id)}
-                className="px-4 py-2 bg-[#22c55e] text-white text-sm font-medium rounded-lg hover:bg-[#16a34a] transition-colors"
+                onClick={() => handleSendEmail(email)}
+                disabled={sendingId === email.id}
+                className="px-4 py-2 bg-[#22c55e] text-white text-sm font-medium rounded-lg hover:bg-[#16a34a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Send Now
+                {sendingId === email.id ? (
+                  <>
+                    <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Sending...
+                  </>
+                ) : (
+                  'Send Now'
+                )}
               </button>
             )}
           </div>

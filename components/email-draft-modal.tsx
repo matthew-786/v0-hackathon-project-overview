@@ -14,12 +14,14 @@ export function EmailDraftModal({ prospect, isOpen, onClose }: EmailDraftModalPr
   const { user, addEmail } = useAuth()
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
+  const [recipientEmail, setRecipientEmail] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [isSending, setIsSending] = useState(false)
 
   // Generate email template when prospect changes
   useEffect(() => {
     if (prospect && isOpen) {
+      setRecipientEmail(prospect.email || '')
       generateEmailDraft()
     }
   }, [prospect, isOpen])
@@ -74,6 +76,7 @@ ${user?.name || 'Your Financial Advisor'}`)
     addEmail({
       prospectId: prospect.id,
       prospectName: prospect.name,
+      recipientEmail,
       subject,
       body,
       status: 'pending',
@@ -87,6 +90,7 @@ ${user?.name || 'Your Financial Advisor'}`)
     // Reset form
     setSubject('')
     setBody('')
+    setRecipientEmail('')
   }
 
   if (!isOpen || !prospect) return null
@@ -105,7 +109,6 @@ ${user?.name || 'Your Financial Advisor'}`)
         <div className="flex items-center justify-between p-6 border-b border-[#1e293b]">
           <div>
             <h2 className="text-xl font-semibold text-white">Draft Email</h2>
-            <p className="text-sm text-[#64748b] mt-1">To: {prospect.name}</p>
           </div>
           <button
             onClick={onClose}
@@ -126,6 +129,23 @@ ${user?.name || 'Your Financial Advisor'}`)
             </div>
           ) : (
             <>
+              {/* To */}
+              <div>
+                <label className="block text-sm font-medium text-[#94a3b8] mb-2">To</label>
+                <div className="flex gap-2">
+                  <div className="flex-1 px-4 py-3 bg-[#1e293b]/50 border border-[#1e293b] rounded-lg text-[#94a3b8] text-sm flex items-center">
+                    {prospect.name}
+                  </div>
+                  <input
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="Recipient Email"
+                    className="flex-[2] px-4 py-3 bg-[#0a0f1c] border border-[#1e293b] rounded-lg text-white placeholder-[#475569] focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+                  />
+                </div>
+              </div>
+
               {/* Subject */}
               <div>
                 <label className="block text-sm font-medium text-[#94a3b8] mb-2">Subject</label>
