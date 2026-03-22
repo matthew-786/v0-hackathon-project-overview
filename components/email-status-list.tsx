@@ -5,7 +5,6 @@ import { EmailRecord } from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { sendGmailEmail } from '@/lib/gmail-api'
 import { toast } from 'sonner'
-import { useState } from 'react'
 
 interface EmailStatusListProps {
   emails: EmailRecord[]
@@ -17,6 +16,7 @@ export function EmailStatusList({ emails, onRedraft, onDelete }: EmailStatusList
   const { updateEmailStatus } = useAuth()
   const [syncingEmail, setSyncingEmail] = useState<string | null>(null)
   const [syncedEmails, setSyncedEmails] = useState<Set<string>>(new Set())
+  const [sendingId, setSendingId] = useState<string | null>(null)
 
   const getStatusBadge = (status: EmailRecord['status']) => {
     const styles: Record<string, string> = {
@@ -67,8 +67,26 @@ export function EmailStatusList({ emails, onRedraft, onDelete }: EmailStatusList
     }
   }
 
-  const handleSendEmail = (emailId: string) => {
-    updateEmailStatus(emailId, 'sent')
+  const handleSendEmail = async (email: EmailRecord) => {
+    setSendingId(email.id)
+    try {
+      const result = await sendGmailEmail({
+        to: email.recipientEmail,
+        subject: email.subject,
+        body: email.body
+      })
+      
+      if (result.success) {
+        updateEmailStatus(email.id, 'sent')
+        toast.success(`Email sent to ${email.prospectName}`)
+      } else {
+        toast.error(result.error || 'Failed to send email')
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred')
+    } finally {
+      setSendingId(null)
+    }
   }
 
   const formatDate = (date: Date) => {
