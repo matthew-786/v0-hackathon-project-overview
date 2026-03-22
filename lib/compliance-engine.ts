@@ -19,7 +19,12 @@ export interface ComplianceAuditResult {
 }
 
 export const checkPromissoryLanguage = (text: string): ComplianceRuleResult => {
-  const forbidden = ['guaranteed', 'no-risk', 'certainty', "can't lose", '100% safe'];
+  const forbidden = [
+    'guaranteed', 'no-risk', 'certainty', "can't lose", '100% safe',
+    'major', "don't miss out", 'dont miss out', 'once in a lifetime', 
+    'double investment', 'double your', 'huge returns', 'massive', 
+    'secret strategy', 'risk-free', 'risk free', 'surefire', 'no downside'
+  ];
   const lowerText = text.toLowerCase();
   const flaggedPhrases: ComplianceRuleResult['flaggedPhrases'] = [];
 
@@ -31,7 +36,7 @@ export const checkPromissoryLanguage = (text: string): ComplianceRuleResult => {
       matches.forEach(match => {
         flaggedPhrases.push({
           phrase: match,
-          reason: `Keyword '${match}' violates FINRA Rule 2210 regarding exaggerated or promissory claims.`,
+          reason: `Keyword '${match}' violates FINRA Rule 2210 regarding exaggerated, promissory, or high-pressure claims.`,
         });
       });
     }
