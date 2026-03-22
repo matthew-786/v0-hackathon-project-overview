@@ -37,12 +37,12 @@ export default function AdvisorLayout({
                 </svg>
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-white">Compliant Prospector</h1>
+                <h1 className="text-lg font-semibold text-white">Outlance AI</h1>
                 <p className="text-xs text-[#64748b]">Financial Advisor Dashboard</p>
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm font-medium text-white">{user.name}</p>

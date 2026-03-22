@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Compliant Prospector',
-  description: 'AI-powered compliant outreach platform for financial advisors',
+  title: 'Outlance AI',
+  description: 'Solve your financial outreach and compliance issues with ease.',
   generator: 'v0.app',
   icons: {
     icon: [
